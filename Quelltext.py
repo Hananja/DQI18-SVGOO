@@ -18,7 +18,7 @@ class Graphic:
         @rtype: str
         @return: tail part of SVG XML output
         """
-        return '</svg>'
+        return '</svg>\n'
 
     def getSVGContent( self ):
         """ Return content of SVG file. 
@@ -51,7 +51,7 @@ class GraphicGroup( Graphic ):
     def getSVGContent( self ):
         ret = ""
         for element in self._elements:
-            ret += element.getSVGContent()
+            ret += element.getSVGContent() + "\n"
 
         return ret
 
@@ -182,31 +182,67 @@ class Rectangle( Graphic ):
         return ( ( self._p1[0] + self._p2[0] ) / 2, ( self._p1[1] + self._p2[1] ) / 2 )
 
 
+class Line(Graphic):
+    def __init__(self, p1, p2):
+        self.setPoints(p1, p2)
+
+    def setPoints(self, p1, p2):
+        self._p1 = p1
+        self._p2 = p2
+
+    def getPoints(self):
+        return (self._p1, self._p2)
+
+    def getSVGContent(self):
+        return '<line x1="%d" y1="%d" x2="%d" y2="%d" %s />' \
+               %(self.getPoints()[0][0], self.getPoints()[0][1],
+                 self.getPoints()[1][0], self.getPoints()[1][1],
+                 self.getStyle())
+
+class Triangle(Graphic):
+    def __init__(self, p1, p2, p3):
+        self.setPoints(p1, p2, p3)
+
+    def setPoints(self, p1, p2, p3):
+        self._p1 = p1
+        self._p2 = p2
+        self._p3 = p3
+
+    def getPoints(self):
+        return (self._p1, self._p2, self._p3)
+
+    def getSVGContent(self):
+        return '<polygon points="%d,%d %d,%d %d,%d" %s />' \
+               %(self._p1[0], self._p1[1],
+                 self._p2[0], self._p2[1],
+                 self._p3[0], self._p3[1],
+                 self.getStyle())
+
 if __name__ == "__main__":
     head = Circle( ( 70, 30 ), 20 )
     body = Rectangle( (40, 50), ( 100, 110 ) )
     body.setRotation( 45 )
-    # legs = (Triangle( ( 50, 80 ), ( 50, 150 ), ( 40, 150 ) ), 
-    #         Triangle( ( 90, 80 ), ( 90, 150 ), ( 100, 150 ) ) )
+    legs = (Triangle( ( 50, 80 ), ( 50, 150 ), ( 40, 150 ) ),
+            Triangle( ( 90, 80 ), ( 90, 150 ), ( 100, 150 ) ) )
 
-    # eyes = (Line( ( 55, 25 ), ( 60, 25 ) ), 
-    #         Line( ( 80, 25 ), ( 85, 25 ) ) )
+    eyes = (Line( ( 55, 25 ), ( 60, 25 ) ),
+            Line( ( 80, 25 ), ( 85, 25 ) ) )
 
-    # nose = Triangle( ( 70, 30 ), ( 68, 35 ), ( 72, 35 ) )
+    nose = Triangle( ( 70, 30 ), ( 68, 35 ), ( 72, 35 ) )
 
     arms = (Rectangle( ( 10, 60 ), ( 60, 65 ), 10 ), 
             Rectangle( ( 80, 60 ), ( 130, 65 ), 20 ) )
 
     gfx = GraphicGroup()
-    # gfx.addElement( legs[0] )
-    # gfx.addElement( legs[1] )
+    gfx.addElement( legs[0] )
+    gfx.addElement( legs[1] )
     gfx.addElement( arms[0] )
     gfx.addElement( arms[1] )
     gfx.addElement( body )
     gfx.addElement( head )
-    # gfx.addElement( eyes[0] )
-    # gfx.addElement( eyes[1] )
-    # gfx.addElement( nose )
+    gfx.addElement( eyes[0] )
+    gfx.addElement( eyes[1] )
+    gfx.addElement( nose )
 
     svgout = open( "output.svg", "w" )
     svgout.write( gfx.getSVG() )
